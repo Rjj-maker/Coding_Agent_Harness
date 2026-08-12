@@ -148,9 +148,9 @@ LLM 本身只是一个"决定下一步做什么"的决策引擎，要将它变�
 | 项目 | 描述 |
 |------|------|
 | **输入** | 当前步骤的消息和结果 |
-| **行为** | 维护当前会话的完整消息历史；将系统提示、工具列表、最近 N 轮对话、反馈结果组装为上下文 |
+| **行为** | 维护当前会话的完整消息历史；将系统提示、工具列表、最近 N 轮对话、反馈结果组装为上下文。每轮对话 = 1 条 user 消息 + 1 条 assistant 消息，默认最多保留 50 条消息（包含系统消息），约 25 轮对话 |
 | **输出** | 组装后的 messages 数组 |
-| **边界条件** | 上下文超出 token 限制时，保留系统提示 + 最近 10 轮对话 |
+| **边界条件** | 上下文超出限制时，保留系统提示 + 最近 50 条消息 |
 | **错误处理** | 无 |
 
 ### 3.8 凭据管理
@@ -261,7 +261,7 @@ interface LLMProvider {
   chat(messages: Message[], options?: LLMOptions): Promise<LLMResponse>;
 }
 
-interface MockLLM extends LLMProvider {
+interface MockLLMProvider extends LLMProvider {
   queueResponse(response: LLMResponse): void;
   getHistory(): Message[];
 }
@@ -353,7 +353,7 @@ interface Memory {
 ### 7.1 凭据存储方案
 
 - **主方案**：Windows Credential Manager，通过 `keytar` 库读写
-- **备选方案**：若凭据管理器不可用，使用 AES-256 加密文件 + 主密码（用户设定）
+- **备选方案**：若凭据管理器不可用，回退到 `.env` 文件（明文警告见 README）
 - **录入流程**：`harness config set-key` → 隐藏回显输入 → 存储至凭据管理器
 - **查看状态**：`harness config status` → 输出 "API key: 已配置" 或 "API key: 未配置"
 - **更新/清除**：`harness config set-key` 覆盖旧值；`harness config clear-key` 删除

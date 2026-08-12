@@ -143,3 +143,87 @@ writing-plans 产出的 PLAN 非常详细，但也存在一个问题：**Plan �
 3. **SPEC 的质量取决于追问的质量**：brainstorming 追问了 6 个关键问题，每个问题都让设计更具体。如果跳过这个阶段直接写 SPEC，很多细节会含糊不清。
 
 4. **"隐藏假设"是最危险的**：冷启动验证（§4.5）的设计正是为了暴露这些假设——我和主 agent 在 brainstorming 中沉淀了大量共享上下文，这些上下文没有明文写入 SPEC，会让另一个 agent 受阻。下一步的冷启动验证将是最关键的考验。
+
+---
+
+## 七、冷启动验证（§4.5）
+
+### 7.1 基本信息
+
+| 项目 | 内容 |
+|------|------|
+| **主开发智能体** | OpenCode (DeepSeek V4 Pro) |
+| **冷启动智能体** | Claude Code |
+| **执行任务** | Task 1（项目脚手架）+ Task 2（核心类型 + 记忆模块） |
+| **执行地点** | 新目录 `Coding_Agent_Harness_local`（与原仓库隔离） |
+
+### 7.2 执行结果
+
+**Task 1：项目脚手架** — 完成（commit 511667d）
+- 创建 package.json、tsconfig.json、vitest.config.ts、eslint.config.mjs、.gitignore、src/index.ts、tests/.gitkeep
+- npm install 成功（271 包）
+- npm run build 成功
+
+**Task 2：核心类型 + 记忆模块** — 完成（commit ca22441，严格 TDD）
+- 🔴 红色：先写 tests/memory/memory.test.ts（3 个测试），运行失败
+- 🟢 绿色：创建 src/agent/types.ts（13 个类型/接口）+ src/memory/memory.ts，3 个测试全部通过
+
+**卡住的地方**：无实质性阻塞。唯一一次流程中断是要求"不要在原仓库实现"。
+
+### 7.3 暴露的 SPEC/PLAN 缺陷（共 5 项）
+
+#### 缺陷 1：eslint.config.mjs 内容缺失（PLAN 遗漏）
+
+**表现**：PLAN Task 1 的 Files 列表要求创建 `eslint.config.mjs`，但所有 Steps 中都没有给出该文件的内容。
+
+**Claude Code 的处理**：根据 package.json 中的依赖组合自行编写了 ESLint 8 flat config + @typescript-eslint 7 配置。
+
+**修复**：在 PLAN Task 1 中补全了 eslint.config.mjs 的完整内容。
+
+#### 缺陷 2：npm test 预期与实际不符（PLAN 小错误）
+
+**表现**：PLAN 预期 `npm test` 在无测试时"通过（0 tests）"，但 vitest 1.6 实际行为是 "No test files found, exiting with code 1"（失败退出码）。
+
+**修复**：修正 PLAN 中的预期描述为 "No test files found，退出码 1（Task 2 添加测试后即全绿）"。
+
+#### 缺陷 3：commit add 列表漏文件（PLAN 遗漏）
+
+**表现**：PLAN Task 1 Step 8 的 `git add` 漏了 `eslint.config.mjs` 和 `package-lock.json`。
+
+**修复**：补全 `git add` 列表。
+
+#### 缺陷 4：SPEC 与 PLAN 数值矛盾（严重）
+
+**表现**：三个不一致点：
+
+| 项 | SPEC 原文 | PLAN 原文 | 修复 |
+|---|-----------|----------|------|
+| 记忆限制 | "保留最近 10 轮对话" | `maxMessages: 50` | 统一为 50 条消息（约 25 轮），SPEC 已更新 |
+| 凭据回退 | "AES-256 加密文件 + 主密码" | `.env` 明文备选 | 统一为 `.env` 备选（更实际），SPEC 已更新 |
+| 接口命名 | `MockLLM` | `MockLLMProvider` | 统一为 `MockLLMProvider`，SPEC 已更新 |
+
+#### 缺陷 5：commit add 列表漏文件（PLAN 遗漏）
+
+**修复**：补全 `git add` 列表，包含 `package-lock.json` 和 `eslint.config.mjs`。
+
+### 7.4 对 SPEC/PLAN 的修订总结
+
+**修订后 SPEC**（commit 待填）：
+- 记忆边界条件：10 轮 → 50 条消息（约 25 轮）
+- 凭据回退：AES-256 加密文件 → `.env` 明文备选
+- 接口命名：MockLLM → MockLLMProvider
+
+**修订后 PLAN**（commit 待填）：
+- Task 1：补全 eslint.config.mjs 内容
+- Task 1：修正 npm test 预期描述
+- Task 1：补全 git add 列表
+- Task 2：Memory 注释对齐 SPEC 说明
+
+### 7.5 对冷启动验证的反思
+
+冷启动验证暴露了 5 个缺陷，其中 3 个是 SPEC/PLAN 之间的数值矛盾（严重），2 个是 PLAN 中的遗漏（中等）。**如果跳过冷启动，直接进入实现，这些矛盾会在后续 task 中暴露为 bug 或重构成本。**
+
+**关键教训**：
+1. **SPEC 和 PLAN 是两种不同的文档，分别写时容易产生不一致**。主 agent 在 brainstorming 中调整了设计但未同步更新 SPEC 和 PLAN 的对应部分。
+2. **PLAN 的"完整代码"模式虽有抄写风险，但确实增加了可执行性**——Claude Code 没有在实现上遇到不确定，说明代码级别的描述足够降低歧义。
+3. **冷启动验证确实暴露了"共享假设"**：例如 AES-256 加密文件回退方案，是我和主 agent 在 brainstorming 中讨论过的，但我没有意识到 PLAN 已经改成了 `.env`，而 SPEC 未同步更新。这种"隐性共识"在不跨文档核对时极难发现。

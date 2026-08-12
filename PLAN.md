@@ -109,7 +109,32 @@ export default defineConfig({
 });
 ```
 
-- [ ] **Step 4: 创建 .gitignore**
+- [ ] **Step 4: 创建 eslint.config.mjs**
+
+```javascript
+import tseslint from '@typescript-eslint/eslint-plugin';
+import tsparser from '@typescript-eslint/parser';
+
+export default [
+  {
+    ignores: ['node_modules/', 'dist/', 'tests/'],
+  },
+  {
+    files: ['src/**/*.ts'],
+    languageOptions: {
+      parser: tsparser,
+      parserOptions: { project: './tsconfig.json' },
+    },
+    plugins: { '@typescript-eslint': tseslint },
+    rules: {
+      '@typescript-eslint/no-unused-vars': 'warn',
+      '@typescript-eslint/no-explicit-any': 'warn',
+    },
+  },
+];
+```
+
+- [ ] **Step 4b: 创建 .gitignore**
 
 ```
 node_modules/
@@ -118,28 +143,28 @@ dist/
 *.log
 ```
 
-- [ ] **Step 5: 创建 src/index.ts 占位**
+- [ ] **Step 5: 创建 src/index.ts 占位**（注意：此 Step 的编号实际为 5，但 eslint 的添加使前序步骤编号偏移，以实际执行为准）
 
 ```typescript
 #!/usr/bin/env node
 console.log('Coding Agent Harness v0.1.0');
 ```
 
-- [ ] **Step 6: 运行 npm install 和 npm test 验证**
+- [ ] **Step 7: 运行 npm install 和 npm test 验证**
 
 Run: `npm install`
 Run: `npm test`
-Expected: 无测试但通过（0 tests）
+Expected: 尚无测试文件，vitest 输出 "No test files found" 并退出码 1（此为正常行为，Task 2 添加测试后即全绿）
 
-- [ ] **Step 7: 运行 npm run build 验证**
+- [ ] **Step 8: 运行 npm run build 验证**
 
 Run: `npm run build`
 Expected: 编译成功，dist/index.js 生成
 
-- [ ] **Step 8: Commit**
+- [ ] **Step 9: Commit**
 
 ```bash
-git add package.json tsconfig.json vitest.config.ts .gitignore src/index.ts tests/.gitkeep
+git add package.json package-lock.json tsconfig.json vitest.config.ts eslint.config.mjs .gitignore src/index.ts tests/.gitkeep
 git commit -m "chore: 初始化项目脚手架" -m "创建 TypeScript + Vitest 项目骨架，配置 Commander.js、OpenAI SDK、keytar 依赖，添加构建和测试脚本。"
 ```
 
@@ -297,6 +322,8 @@ export class Memory {
     this.systemPrompt = systemPrompt;
     this.maxMessages = options.maxMessages ?? 50;
   }
+
+  // SPEC 3.7: 默认保留系统提示 + 最近 50 条消息（约 25 轮对话）
 
   addMessage(msg: Message): void {
     this.messages.push(msg);
