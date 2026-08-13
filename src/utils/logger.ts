@@ -29,7 +29,10 @@ export class Logger {
     console.log(`\n${C.bold}${C.blue}◆ ${title}${C.reset}`);
   }
   divider(): void {
-    console.log(C.gray + '─'.repeat(50) + C.reset);
+    console.log('\n' + C.gray + '━'.repeat(60) + C.reset + '\n');
+  }
+  separator(): void {
+    console.log(C.gray + '┄'.repeat(60) + C.reset);
   }
 }
 export const logger = new Logger();

@@ -58,7 +58,6 @@ program.command('run <task...>').description('执行单次编码任务')
     const loop = new AgentLoop(config, llm, createRegistry(projectRoot), new Guardrail(projectRoot), new FeedbackLoop(), new Memory('You are a coding agent.', { maxMessages: 50 }), onStep);
     logger.section(`任务: ${task}`);
     logger.info(`模型: ${model}  |  API: ${endpoint}`);
-    logger.divider();
     const result = await loop.run(task);
     logger.divider();
     if (result.state === 'completed') logger.success(`完成 (${result.steps} 步) — ${result.message}`);
@@ -80,19 +79,20 @@ program.action(async () => {
   const endpoint = cfgStore.getEndpoint();
   logger.info(`模型: ${model}  |  API: ${endpoint}`);
   logger.info('输入任务描述，输入 /exit 退出，Ctrl+C 停止当前任务');
-  logger.divider();
   const projectRoot = process.cwd();
   const config: AgentConfig = { maxSteps: 30, maxRetries: 3, projectRoot, model };
   const llm = new OpenAIProvider(apiKey, endpoint, model);
   const loop = new AgentLoop(config, llm, createRegistry(projectRoot), new Guardrail(projectRoot), new FeedbackLoop(), new Memory('You are a coding agent.', { maxMessages: 50 }), onStep);
   const readline = await import('readline');
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout, prompt: 'harness> ' });
+  let convCount = 0;
   rl.prompt();
   rl.on('line', async (line: string) => {
     const trimmed = line.trim();
     if (trimmed === '/exit' || trimmed === '/quit') { logger.info('再见！'); rl.close(); return; }
     if (!trimmed) { rl.prompt(); return; }
-    logger.divider();
+    convCount++;
+    logger.section(`对话 #${convCount}: ${trimmed.length > 50 ? trimmed.slice(0, 50) + '...' : trimmed}`);
     const abort = new AbortController();
     const sigint = () => {
       logger.warn('\n中断信号 — 正在取消当前任务...');

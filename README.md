@@ -53,16 +53,17 @@ node dist/index.js
 
 模型: DeepSeek-V3  |  API: https://njusehub.info/v1
 输入任务描述，输入 /exit 退出，Ctrl+C 停止当前任务
-──────────────────────────────────────────────────
+
 harness> 创建一个 utils.ts 文件，导出 add 和 multiply 函数
-──────────────────────────────────────────────────
+
+◆ 对话 #1: 创建一个 utils.ts 文件，导出 add 和 multiply 函数
 [09:30:01] ▶ Step 1 | write_file(utils.ts, export function add...) (1234ms)
 [09:30:03] ▶ Step 2 | run_test(npx vitest run) (2156ms)
 [09:30:03] ⚠ [Feedback] FAILED (assertion)
-──────────────────────────────────────────────────
-✓ 完成 — 任务完成
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+✓ 完成 — 测试通过
 
-harness> /exit
+harness> 创建一个 add 函数
 ```
 
 ### 单次任务
