@@ -36,6 +36,10 @@ function onStep(event: StepEvent): void {
   }
 }
 
+function debugLog(msg: string): void {
+  console.log(`\x1b[90m[DEBUG] ${msg}\x1b[0m`);
+}
+
 const program = new Command();
 program.name('harness').description('Coding Agent Harness').version('0.1.0');
 program.addCommand(createConfigCommand());

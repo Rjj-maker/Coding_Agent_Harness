@@ -84,9 +84,12 @@ export class AgentLoop {
 
       this.memory.addMessage({ role: 'assistant', content: response.content });
       const parsed = this.parseResponse(response.content);
+      if (this.onStep) {
+        this.onStep({ step: this.stepCount, action: `[DEBUG] LLM原始响应: ${response.content.slice(0, 200)}`, duration: 0 });
+      }
       if (parsed === null) {
         this.state = 'completed';
-        if (response.content && response.content.length > 0 && response.content !== 'Task completed.' && response.content !== 'Finished.') {
+        if (response.content && response.content.length > 0) {
           return { state: 'completed', steps: this.stepCount, message: response.content };
         }
         return { state: 'completed', steps: this.stepCount, message: 'Task completed.' };
