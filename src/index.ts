@@ -56,10 +56,10 @@ program.command('run <task...>').description('执行单次编码任务')
     const config: AgentConfig = { maxSteps: parseInt(options.maxSteps, 10), maxRetries: 3, projectRoot, model };
     const llm = new OpenAIProvider(apiKey, endpoint, model);
     const loop = new AgentLoop(config, llm, createRegistry(projectRoot), new Guardrail(projectRoot), new FeedbackLoop(), new Memory('You are a coding agent.', { maxMessages: 50 }), onStep);
-    logger.section(`任务: ${task}`);
+    logger.convStart(0, task);
     logger.info(`模型: ${model}  |  API: ${endpoint}`);
     const result = await loop.run(task);
-    logger.divider();
+    logger.convEnd();
     if (result.state === 'completed') logger.success(`完成 (${result.steps} 步) — ${result.message}`);
     else if (result.state === 'need_approval') logger.warn(`需要审批 — ${result.message}`);
     else logger.error(`失败 (${result.steps} 步) — ${result.message}`);
@@ -92,7 +92,7 @@ program.action(async () => {
     if (trimmed === '/exit' || trimmed === '/quit') { logger.info('再见！'); rl.close(); return; }
     if (!trimmed) { rl.prompt(); return; }
     convCount++;
-    logger.section(`对话 #${convCount}: ${trimmed.length > 50 ? trimmed.slice(0, 50) + '...' : trimmed}`);
+    logger.convStart(convCount, trimmed);
     const abort = new AbortController();
     const sigint = () => {
       logger.warn('\n中断信号 — 正在取消当前任务...');
@@ -101,7 +101,7 @@ program.action(async () => {
     process.once('SIGINT', sigint);
     const result = await loop.run(trimmed, abort.signal);
     process.removeListener('SIGINT', sigint);
-    logger.divider();
+    logger.convEnd();
     if (result.state === 'completed') logger.success(`完成 — ${result.message}`);
     else if (result.state === 'need_approval') logger.warn(`需要审批 — ${result.message}`);
     else logger.error(`失败 — ${result.message}`);

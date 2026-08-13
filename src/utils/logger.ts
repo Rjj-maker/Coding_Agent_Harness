@@ -41,8 +41,19 @@ export class Logger {
   divider(): void {
     console.log('\n' + C.gray + '━'.repeat(60) + C.reset + '\n');
   }
-  separator(): void {
-    console.log(C.gray + '┄'.repeat(60) + C.reset);
+  convStart(num: number, msg: string): void {
+    const label = `对话 #${num}`;
+    const text = msg.length > 50 ? msg.slice(0, 48) + '...' : msg;
+    const line = `${label} — ${text}`;
+    const pad = Math.max(0, 58 - line.length);
+    console.log('');
+    console.log(`${C.cyan}┏${'━'.repeat(58)}┓${C.reset}`);
+    console.log(`${C.cyan}┃${C.reset} ${C.bold}${C.cyan}${line}${C.dim}${' '.repeat(pad)}${C.reset} ${C.cyan}┃${C.reset}`);
+    console.log(`${C.cyan}┗${'━'.repeat(58)}┛${C.reset}`);
+  }
+  convEnd(): void {
+    console.log(`${C.cyan}┌${'─'.repeat(58)}┐${C.reset}`);
+    console.log(`${C.cyan}└${'─'.repeat(58)}┘${C.reset}\n`);
   }
 }
 export const logger = new Logger();
