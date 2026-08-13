@@ -2,6 +2,10 @@
 
 AI-powered coding assistant harness with feedback loop and guardrails.
 
+## 项目简介
+
+Coding Agent Harness 是一个 TypeScript 实现的编码智能体内核，核心机制均由确定性的代码实现（非提示词），可在 mock LLM 下用单元测试独立验证。包含 6 个工具、危险命令护栏、反馈闭环和凭据安全管理，通过 npm 分发。
+
 ## 安装
 
 npm install -g @rjj-maker/coding-agent-harness
@@ -21,6 +25,22 @@ harness run "在 src/utils.ts 中创建 add 函数"
 harness config set-key    # 设置 API key（隐藏输入）
 harness config status     # 查看配置状态
 harness config clear-key  # 清除 API key
+
+**API Key 格式**：完整的密钥字符串，例如 `sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`。从你的 LLM 供应商获取（如 NJUSE Hub 的控制台）。
+
+**默认配置**：
+- API 地址：`https://njusehub.info/v1`（可通过环境变量 `LLM_BASE_URL` 覆盖）
+- 默认模型：`deepseek-v3`（可通过 `--model` 参数覆盖）
+
+**切换 API 供应商示例**：
+```bash
+# 使用 OpenAI
+$env:LLM_BASE_URL="https://api.openai.com/v1"
+node dist/index.js run "你的任务" --model gpt-4o
+
+# 使用 NJUSE Hub 的其他模型
+node dist/index.js run "你的任务" --model deepseek-v4-pro
+```
 
 ## 安全配置
 
