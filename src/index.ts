@@ -86,21 +86,29 @@ program.action(async () => {
   const readline = await import('readline');
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout, prompt: 'harness> ' });
   let convCount = 0;
+  let runningTask: AbortController | null = null;
   rl.prompt();
+
+  process.on('SIGINT', () => {
+    if (runningTask) {
+      logger.warn('\n中断信号 — 正在取消当前任务...');
+      runningTask.abort();
+      runningTask = null;
+    } else {
+      logger.info('\n再见！');
+      rl.close();
+    }
+  });
+
   rl.on('line', async (line: string) => {
     const trimmed = line.trim();
     if (trimmed === '/exit' || trimmed === '/quit') { logger.info('再见！'); rl.close(); return; }
     if (!trimmed) { rl.prompt(); return; }
     convCount++;
     logger.convStart(convCount, trimmed);
-    const abort = new AbortController();
-    const sigint = () => {
-      logger.warn('\n中断信号 — 正在取消当前任务...');
-      abort.abort();
-    };
-    process.once('SIGINT', sigint);
-    const result = await loop.run(trimmed, abort.signal);
-    process.removeListener('SIGINT', sigint);
+    runningTask = new AbortController();
+    const result = await loop.run(trimmed, runningTask.signal);
+    runningTask = null;
     logger.convEnd();
     if (result.state === 'completed') logger.success(`完成 — ${result.message}`);
     else if (result.state === 'need_approval') logger.warn(`需要审批 — ${result.message}`);
