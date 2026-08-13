@@ -2260,7 +2260,7 @@ brainstorming 技能做得好：逐块呈现设计并确认，每个设计块都
 - **Commit**: `04e90c2` - 项目脚手架（package.json、tsconfig、vitest、eslint、.gitignore、src/index.ts）
 - **人工干预**: 无
 
-### Task 2: 核心类型 + 记忆
+### Task 2: 核心类型定义 + 记忆模块 ✅ (commit `ae9171c`)
 - **技能**: TDD (test-driven-development)
 - **Commit**: (待填入)
 - **人工干预**: 无
