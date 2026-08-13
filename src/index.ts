@@ -3,7 +3,7 @@ import { Command } from 'commander';
 import { createConfigCommand } from './config/cli.js';
 import { CredentialStore } from './config/credential-store.js';
 import { ConfigStore } from './config/config-store.js';
-import { AgentLoop } from './agent/loop.js';
+import { AgentLoop, StepEvent } from './agent/loop.js';
 import { OpenAIProvider } from './llm/openai-provider.js';
 import { ToolRegistry } from './tools/registry.js';
 import { ReadFileTool } from './tools/read-file.js';
@@ -17,6 +17,24 @@ import { FeedbackLoop } from './feedback/feedback-loop.js';
 import { Memory } from './memory/memory.js';
 import { AgentConfig } from './agent/types.js';
 import { logger } from './utils/logger.js';
+
+function createRegistry(projectRoot: string): ToolRegistry {
+  const registry = new ToolRegistry();
+  registry.register(new ReadFileTool(projectRoot));
+  registry.register(new WriteFileTool(projectRoot));
+  registry.register(new ShellTool());
+  registry.register(new RunTestTool());
+  registry.register(new LintTool());
+  registry.register(new GrepTool(projectRoot));
+  return registry;
+}
+
+function onStep(event: StepEvent): void {
+  logger.step(event.step, event.action, event.duration);
+  if (event.feedback && !event.feedback.includes('PASSED')) {
+    logger.warn(event.feedback);
+  }
+}
 
 const program = new Command();
 program.name('harness').description('Coding Agent Harness').version('0.1.0');
@@ -37,53 +55,52 @@ program.command('run <task...>').description('执行单次编码任务')
     const endpoint = cfgStore.getEndpoint();
     const config: AgentConfig = { maxSteps: parseInt(options.maxSteps, 10), maxRetries: 3, projectRoot, model };
     const llm = new OpenAIProvider(apiKey, endpoint, model);
-    const registry = new ToolRegistry();
-    registry.register(new ReadFileTool(projectRoot));
-    registry.register(new WriteFileTool(projectRoot));
-    registry.register(new ShellTool());
-    registry.register(new RunTestTool());
-    registry.register(new LintTool());
-    registry.register(new GrepTool(projectRoot));
-    const loop = new AgentLoop(config, llm, registry, new Guardrail(projectRoot), new FeedbackLoop(), new Memory('You are a coding agent.', { maxMessages: 50 }));
-    logger.info(`开始执行任务: ${task}`);
+    const loop = new AgentLoop(config, llm, createRegistry(projectRoot), new Guardrail(projectRoot), new FeedbackLoop(), new Memory('You are a coding agent.', { maxMessages: 50 }), onStep);
+    logger.section(`任务: ${task}`);
+    logger.info(`模型: ${model}  |  API: ${endpoint}`);
+    logger.divider();
     const result = await loop.run(task);
-    logger.info(`结果: ${result.state} | 步骤: ${result.steps} | ${result.message}`);
+    logger.divider();
+    if (result.state === 'completed') logger.success(`完成 (${result.steps} 步) — ${result.message}`);
+    else if (result.state === 'need_approval') logger.warn(`需要审批 — ${result.message}`);
+    else logger.error(`失败 (${result.steps} 步) — ${result.message}`);
   });
 
 program.action(async () => {
-  logger.info('Coding Agent Harness v0.1.0');
+  logger.banner();
   const store = new CredentialStore();
   const cfgStore = new ConfigStore();
   const apiKey = await store.getKey();
-  if (!apiKey) { logger.error('未配置 API key，请先运行: harness config set-key'); process.exit(1); }
+  if (!apiKey) {
+    logger.error('未配置 API key');
+    logger.info('请运行: harness config set-key');
+    process.exit(1);
+  }
   const model = cfgStore.getModel();
   const endpoint = cfgStore.getEndpoint();
-  logger.info(`API 地址: ${endpoint}`);
-  logger.info(`模型: ${model}`);
+  logger.info(`模型: ${model}  |  API: ${endpoint}`);
   logger.info('输入任务描述开始交互，输入 /exit 退出');
+  logger.divider();
   const projectRoot = process.cwd();
   const config: AgentConfig = { maxSteps: 30, maxRetries: 3, projectRoot, model };
   const llm = new OpenAIProvider(apiKey, endpoint, model);
-  const registry = new ToolRegistry();
-  registry.register(new ReadFileTool(projectRoot));
-  registry.register(new WriteFileTool(projectRoot));
-  registry.register(new ShellTool());
-  registry.register(new RunTestTool());
-  registry.register(new LintTool());
-  registry.register(new GrepTool(projectRoot));
-  const loop = new AgentLoop(config, llm, registry, new Guardrail(projectRoot), new FeedbackLoop(), new Memory('You are a coding agent.', { maxMessages: 50 }));
+  const loop = new AgentLoop(config, llm, createRegistry(projectRoot), new Guardrail(projectRoot), new FeedbackLoop(), new Memory('You are a coding agent.', { maxMessages: 50 }), onStep);
   const readline = await import('readline');
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout, prompt: 'harness> ' });
   rl.prompt();
   rl.on('line', async (line: string) => {
     const trimmed = line.trim();
-    if (trimmed === '/exit' || trimmed === '/quit') { rl.close(); return; }
+    if (trimmed === '/exit' || trimmed === '/quit') { logger.info('再见！'); rl.close(); return; }
     if (!trimmed) { rl.prompt(); return; }
+    logger.divider();
     const result = await loop.run(trimmed);
-    logger.info(`[${result.state}] ${result.message}`);
+    logger.divider();
+    if (result.state === 'completed') logger.success(`完成 — ${result.message}`);
+    else if (result.state === 'need_approval') logger.warn(`需要审批 — ${result.message}`);
+    else logger.error(`失败 — ${result.message}`);
     rl.prompt();
   });
-  rl.on('close', () => { logger.info('再见！'); process.exit(0); });
+  rl.on('close', () => { process.exit(0); });
 });
 
 program.parse();

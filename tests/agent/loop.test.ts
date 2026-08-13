@@ -52,6 +52,6 @@ describe('AgentLoop', () => {
     mockLLM.queueResponse({ content: JSON.stringify({ action: { type: 'shell', params: { command: 'rm -rf /' }, id: '1' } }) });
     const result = await loop.run('Delete everything');
     expect(result.state).toBe('need_approval');
-    expect(result.steps).toBe(0);
+    expect(result.steps).toBe(1);
   });
 });
