@@ -362,7 +362,7 @@ git commit -m "feat: 添加核心类型和记忆模块" -m "定义 Agent 核心�
 
 ---
 
-### Task 3: LLM 抽象层（MockProvider + OpenAIProvider）
+### Task 3: LLM 抽象层（MockProvider + OpenAIProvider） ✅ (commit `ffbc386`)
 
 **Files:**
 - Create: `src/llm/provider.ts`
@@ -509,7 +509,7 @@ git commit -m "feat: 实现 LLM 抽象层（MockLLMProvider + OpenAIProvider）"
 
 ---
 
-### Task 4: 工具系统（接口 + 注册表 + 6 个工具）
+### Task 4: 工具系统（接口 + 注册表 + 6 个工具） ✅ (commit `19f5469`)
 
 **Files:**
 - Create: `src/tools/tool.ts`
@@ -866,7 +866,7 @@ git commit -m "feat: 实现工具系统（接口 + 注册表 + 6 个工具）" -
 
 ---
 
-### Task 5: 治理护栏
+### Task 5: 治理护栏 ✅ (commit `91528db`)
 
 **Files:**
 - Create: `src/guardrail/guardrail.ts`
@@ -1032,7 +1032,7 @@ git commit -m "feat: 实现治理护栏模块" -m "Guardrail 类支持危险命�
 
 ---
 
-### Task 6: 反馈闭环（主维度）
+### Task 6: 反馈闭环（主维度） ✅ (commit `facca10`)
 
 **Files:**
 - Create: `src/feedback/feedback-loop.ts`
@@ -1260,7 +1260,7 @@ git commit -m "feat: 实现反馈闭环模块（主维度）" -m "FeedbackLoop �
 
 ---
 
-### Task 7: Agent 主循环
+### Task 7: Agent 主循环 ✅ (commit `167a9bc`)
 
 **Files:**
 - Create: `src/agent/loop.ts`
@@ -1543,7 +1543,7 @@ git commit -m "feat: 实现 Agent 主循环" -m "AgentLoop 负责组织上下文
 
 ---
 
-### Task 8: CLI 入口 + 凭据管理
+### Task 8: CLI 入口 + 凭据管理 ✅ (commit `ddf8432`)
 
 **Files:**
 - Modify: `src/index.ts`
@@ -2066,7 +2066,7 @@ git commit -m "test: 添加机制演示测试" -m "3 个演示场景：① 治�
 
 ---
 
-### Task 10: CI 配置 + README
+### Task 10: CI 配置 + README ✅ (commit `4dc8739`)
 
 **Files:**
 - Create: `.github/workflows/ci.yml`
