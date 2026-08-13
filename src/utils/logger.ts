@@ -42,18 +42,12 @@ export class Logger {
     console.log('\n' + C.gray + '━'.repeat(60) + C.reset + '\n');
   }
   convStart(num: number, msg: string): void {
-    const label = `对话 #${num}`;
     const text = msg.length > 50 ? msg.slice(0, 48) + '...' : msg;
-    const line = `${label} — ${text}`;
-    const pad = Math.max(0, 58 - line.length);
-    console.log('');
-    console.log(`${C.cyan}┏${'━'.repeat(58)}┓${C.reset}`);
-    console.log(`${C.cyan}┃${C.reset} ${C.bold}${C.cyan}${line}${C.dim}${' '.repeat(pad)}${C.reset} ${C.cyan}┃${C.reset}`);
-    console.log(`${C.cyan}┗${'━'.repeat(58)}┛${C.reset}`);
+    console.log(`\n${C.bold}${C.cyan}◆ 对话 #${num}: ${text}${C.reset}`);
+    console.log(C.cyan + '━'.repeat(60) + C.reset);
   }
   convEnd(): void {
-    console.log(`${C.cyan}┌${'─'.repeat(58)}┐${C.reset}`);
-    console.log(`${C.cyan}└${'─'.repeat(58)}┘${C.reset}\n`);
+    console.log(C.cyan + '━'.repeat(60) + C.reset + '\n');
   }
 }
 export const logger = new Logger();
