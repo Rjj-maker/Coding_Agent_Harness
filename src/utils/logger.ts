@@ -44,10 +44,9 @@ export class Logger {
   convStart(num: number, msg: string): void {
     const text = msg.length > 50 ? msg.slice(0, 48) + '...' : msg;
     console.log(`\n${C.bold}${C.cyan}◆ 对话 #${num}: ${text}${C.reset}`);
-    console.log(C.cyan + '━'.repeat(60) + C.reset);
   }
   convEnd(): void {
-    console.log(C.cyan + '━'.repeat(60) + C.reset + '\n');
+    console.log('');
   }
 }
 export const logger = new Logger();

@@ -61,7 +61,7 @@ program.command('run <task...>').description('执行单次编码任务')
     const result = await loop.run(task);
     logger.convEnd();
     if (result.state === 'completed') {
-      if (result.steps === 0 && result.message && result.message.length > 0) {
+      if (result.steps === 1 && result.message && result.message.length > 0) {
         console.log(result.message);
       }
       logger.success(`完成 (${result.steps} 步)`);
@@ -116,7 +116,7 @@ program.action(async () => {
     runningTask = null;
     logger.convEnd();
     if (result.state === 'completed') {
-      if (result.steps === 0 && result.message && result.message.length > 0) {
+      if (result.steps === 1 && result.message && result.message.length > 0) {
         console.log(result.message);
       }
       logger.success(`完成`);
