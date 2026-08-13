@@ -20,27 +20,28 @@ harness
 
 harness run "在 src/utils.ts 中创建 add 函数"
 
-### 配置 API Key
+### 配置
 
-harness config set-key    # 设置 API key（隐藏输入）
-harness config status     # 查看配置状态
-harness config clear-key  # 清除 API key
+```bash
+harness config set-key              # 设置 API key（隐藏输入）
+harness config set-model <模型名>    # 设置默认模型（如 DeepSeek-V3）
+harness config set-endpoint <URL>   # 设置 API 地址
+harness config status               # 查看完整配置
+harness config clear-key            # 清除 API key
+```
 
-**API Key 格式**：完整的密钥字符串，例如 `sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx`。从你的 LLM 供应商获取（如 NJUSE Hub 的控制台）。
+**API Key**：完整的密钥字符串，从你的 LLM 供应商获取（如 NJUSE Hub 控制台）。
 
 **默认配置**：
-- API 地址：`https://njusehub.info/v1`（可通过环境变量 `LLM_BASE_URL` 覆盖）
-- 默认模型：`deepseek-v3`（可通过 `--model` 参数覆盖）
+- API 地址：`https://njusehub.info/v1`
+- 默认模型：`DeepSeek-V3`
+- 模型和地址存储在 `~/.harness/config.json`，API key 存储在系统凭据管理器
 
-**切换 API 供应商示例**：
-```bash
-# 使用 OpenAI
-$env:LLM_BASE_URL="https://api.openai.com/v1"
-node dist/index.js run "你的任务" --model gpt-4o
+**环境变量**（优先级高于配置文件）：
+- `LLM_BASE_URL`：覆盖 API 地址
 
-# 使用 NJUSE Hub 的其他模型
-node dist/index.js run "你的任务" --model deepseek-v4-pro
-```
+**命令行参数**（优先级高于环境变量和配置文件）：
+- `harness run "任务" --model gpt-4o`：覆盖模型
 
 ## 安全配置
 
