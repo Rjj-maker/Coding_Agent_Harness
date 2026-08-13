@@ -8,17 +8,70 @@ Coding Agent Harness 是一个 TypeScript 实现的编码智能体内核，核�
 
 ## 安装
 
-npm install -g @rjj-maker/coding-agent-harness
+```bash
+git clone https://github.com/Rjj-maker/Coding_Agent_Harness.git
+cd Coding_Agent_Harness
+npm install
+npm run build
+```
+
+## 快速上手
+
+```bash
+# 1. 配置 API key
+node dist/index.js config set-key
+# 输入你的 NJUSE Hub API key（sk-xxx...）
+
+# 2. 设置模型（可选，默认 DeepSeek-V3）
+node dist/index.js config set-model DeepSeek-V3
+
+# 3. 查看配置
+node dist/index.js config status
+# API key: 已配置
+# API 地址: https://njusehub.info/v1
+# 模型: DeepSeek-V3
+
+# 4. 单次任务
+node dist/index.js run "在 src 目录下创建一个 hello.ts 文件，输出 Hello World"
+
+# 5. 交互式 REPL（Ctrl+C 停止当前任务，/exit 退出）
+node dist/index.js
+```
 
 ## 使用
 
 ### 交互式 REPL
 
-harness
+```bash
+node dist/index.js
+```
+
+```
+  ╔══════════════════════════════════╗
+  ║   Coding Agent Harness v0.1.0   ║
+  ╚══════════════════════════════════╝
+
+模型: DeepSeek-V3  |  API: https://njusehub.info/v1
+输入任务描述，输入 /exit 退出，Ctrl+C 停止当前任务
+──────────────────────────────────────────────────
+harness> 创建一个 utils.ts 文件，导出 add 和 multiply 函数
+──────────────────────────────────────────────────
+[09:30:01] ▶ Step 1 | write_file(utils.ts, export function add...) (1234ms)
+[09:30:03] ▶ Step 2 | run_test(npx vitest run) (2156ms)
+[09:30:03] ⚠ [Feedback] FAILED (assertion)
+──────────────────────────────────────────────────
+✓ 完成 — 任务完成
+
+harness> /exit
+```
 
 ### 单次任务
 
-harness run "在 src/utils.ts 中创建 add 函数"
+```bash
+node dist/index.js run "在 src/utils.ts 中创建 add 函数"
+node dist/index.js run "修复所有 TypeScript 类型错误" --model DeepSeek-V3
+node dist/index.js run "运行测试并修复失败用例" --max-steps 50
+```
 
 ### 配置
 
