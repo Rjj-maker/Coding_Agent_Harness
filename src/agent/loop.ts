@@ -86,6 +86,9 @@ export class AgentLoop {
       const parsed = this.parseResponse(response.content);
       if (parsed === null) {
         this.state = 'completed';
+        if (response.content && response.content.length > 0 && response.content !== 'Task completed.' && response.content !== 'Finished.') {
+          return { state: 'completed', steps: this.stepCount, message: response.content };
+        }
         return { state: 'completed', steps: this.stepCount, message: 'Task completed.' };
       }
       if (typeof parsed === 'string') {
