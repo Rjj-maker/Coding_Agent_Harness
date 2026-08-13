@@ -76,11 +76,11 @@ node dist/index.js run "运行测试并修复失败用例" --max-steps 50
 ### 配置
 
 ```bash
-harness config set-key              # 设置 API key（隐藏输入）
-harness config set-model <模型名>    # 设置默认模型（如 DeepSeek-V3）
-harness config set-endpoint <URL>   # 设置 API 地址
-harness config status               # 查看完整配置
-harness config clear-key            # 清除 API key
+node dist/index.js config set-key              # 设置 API key（隐藏输入）
+node dist/index.js config set-model <模型名>    # 设置默认模型（如 DeepSeek-V3）
+node dist/index.js config set-endpoint <URL>   # 设置 API 地址
+node dist/index.js config status               # 查看完整配置
+node dist/index.js config clear-key            # 清除 API key
 ```
 
 **API Key**：完整的密钥字符串，从你的 LLM 供应商获取（如 NJUSE Hub 控制台）。
@@ -94,7 +94,7 @@ harness config clear-key            # 清除 API key
 - `LLM_BASE_URL`：覆盖 API 地址
 
 **命令行参数**（优先级高于环境变量和配置文件）：
-- `harness run "任务" --model gpt-4o`：覆盖模型
+- `node dist/index.js run "任务" --model gpt-4o`：覆盖模型
 
 ## 安全配置
 
