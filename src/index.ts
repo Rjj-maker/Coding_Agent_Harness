@@ -60,7 +60,12 @@ program.command('run <task...>').description('执行单次编码任务')
     logger.info(`模型: ${model}  |  API: ${endpoint}`);
     const result = await loop.run(task);
     logger.convEnd();
-    if (result.state === 'completed') logger.success(`完成 (${result.steps} 步) — ${result.message}`);
+    if (result.state === 'completed') {
+      if (result.steps === 0 && result.message && result.message !== 'Task completed.' && result.message !== 'Finished.') {
+        console.log(result.message);
+      }
+      logger.success(`完成 (${result.steps} 步) — ${result.message}`);
+    }
     else if (result.state === 'need_approval') logger.warn(`需要审批 — ${result.message}`);
     else logger.error(`失败 (${result.steps} 步) — ${result.message}`);
   });
@@ -110,8 +115,12 @@ program.action(async () => {
     const result = await loop.run(trimmed, runningTask.signal);
     runningTask = null;
     logger.convEnd();
-    if (result.state === 'completed') logger.success(`完成 — ${result.message}`);
-    else if (result.state === 'need_approval') logger.warn(`需要审批 — ${result.message}`);
+    if (result.state === 'completed') {
+      if (result.steps === 0 && result.message && result.message !== 'Task completed.' && result.message !== 'Finished.') {
+        console.log(result.message);
+      }
+      logger.success(`完成 — ${result.message}`);
+    } else if (result.state === 'need_approval') logger.warn(`需要审批 — ${result.message}`);
     else logger.error(`失败 — ${result.message}`);
     rl.prompt();
   });
