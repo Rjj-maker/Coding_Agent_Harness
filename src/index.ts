@@ -36,10 +36,6 @@ function onStep(event: StepEvent): void {
   }
 }
 
-function debugLog(msg: string): void {
-  console.log(`\x1b[90m[DEBUG] ${msg}\x1b[0m`);
-}
-
 const program = new Command();
 program.name('harness').description('Coding Agent Harness').version('0.1.0');
 program.addCommand(createConfigCommand());
@@ -65,10 +61,10 @@ program.command('run <task...>').description('执行单次编码任务')
     const result = await loop.run(task);
     logger.convEnd();
     if (result.state === 'completed') {
-      if (result.steps === 0 && result.message && result.message !== 'Task completed.' && result.message !== 'Finished.') {
+      if (result.steps === 0 && result.message && result.message.length > 0) {
         console.log(result.message);
       }
-      logger.success(`完成 (${result.steps} 步) — ${result.message}`);
+      logger.success(`完成 (${result.steps} 步)`);
     }
     else if (result.state === 'need_approval') logger.warn(`需要审批 — ${result.message}`);
     else logger.error(`失败 (${result.steps} 步) — ${result.message}`);
@@ -120,10 +116,10 @@ program.action(async () => {
     runningTask = null;
     logger.convEnd();
     if (result.state === 'completed') {
-      if (result.steps === 0 && result.message && result.message !== 'Task completed.' && result.message !== 'Finished.') {
+      if (result.steps === 0 && result.message && result.message.length > 0) {
         console.log(result.message);
       }
-      logger.success(`完成 — ${result.message}`);
+      logger.success(`完成`);
     } else if (result.state === 'need_approval') logger.warn(`需要审批 — ${result.message}`);
     else logger.error(`失败 — ${result.message}`);
     rl.prompt();
