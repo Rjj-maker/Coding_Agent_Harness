@@ -76,12 +76,39 @@ node dist/index.js run "运行测试并修复失败用例" --max-steps 50
 ### 配置
 
 ```bash
-node dist/index.js config set-key              # 设置 API key（隐藏输入）
-node dist/index.js config set-model <模型名>    # 设置默认模型（如 DeepSeek-V3）
-node dist/index.js config set-endpoint <URL>   # 设置 API 地址
-node dist/index.js config status               # 查看完整配置
-node dist/index.js config clear-key            # 清除 API key
+# 设置 API key（隐藏输入）
+node dist/index.js config set-key
+
+# 设置默认模型
+node dist/index.js config set-model DeepSeek-V3
+
+# 设置 API 地址（注意：PowerShell 中 URL 必须加引号）
+node dist/index.js config set-endpoint "https://api.deepseek.com"
+
+# 查看完整配置
+node dist/index.js config status
+
+# 清除 API key
+node dist/index.js config clear-key
 ```
+
+**切换 API 提供商示例**：
+
+```bash
+# DeepSeek 官方
+node dist/index.js config set-endpoint "https://api.deepseek.com"
+node dist/index.js config set-model deepseek-chat
+
+# OpenAI
+node dist/index.js config set-endpoint "https://api.openai.com/v1"
+node dist/index.js config set-model gpt-4o
+
+# NJUSE Hub（默认）
+node dist/index.js config set-endpoint "https://njusehub.info/v1"
+node dist/index.js config set-model DeepSeek-V3
+```
+
+> **注意**：Windows PowerShell 中 URL 必须用双引号包裹，否则 `<` 和 `>` 会被解析为重定向符号。macOS / Linux 终端可省略引号。
 
 **API Key**：完整的密钥字符串，从你的 LLM 供应商获取（如 NJUSE Hub 控制台）。
 
