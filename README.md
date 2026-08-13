@@ -30,7 +30,60 @@ harness config clear-key  # 清除 API key
 
 ## 目录结构
 
-src/ 源代码，tests/ 测试，详见 REPO。
+```
+├── .github/workflows/ci.yml    # CI 配置（unit-test job）
+├── src/
+│   ├── index.ts                # CLI 入口（REPL + run 双模式）
+│   ├── agent/
+│   │   ├── types.ts            # 核心类型定义（Message, Action, AgentConfig 等）
+│   │   └── loop.ts             # Agent 主循环
+│   ├── config/
+│   │   ├── cli.ts              # config 子命令（set-key/status/clear-key）
+│   │   └── credential-store.ts # 凭据管理（keytar + .env 备选）
+│   ├── llm/
+│   │   ├── provider.ts         # LLMProvider 接口
+│   │   ├── openai-provider.ts  # OpenAI 兼容实现
+│   │   └── mock-provider.ts    # Mock LLM（测试用）
+│   ├── tools/
+│   │   ├── tool.ts             # Tool 接口
+│   │   ├── registry.ts         # ToolRegistry 工具注册与分发
+│   │   ├── read-file.ts        # 读文件
+│   │   ├── write-file.ts       # 写文件
+│   │   ├── shell.ts            # 执行 Shell 命令
+│   │   ├── run-test.ts         # 运行测试
+│   │   ├── lint.ts             # 运行 Lint
+│   │   └── grep.ts             # 搜索代码
+│   ├── guardrail/
+│   │   └── guardrail.ts        # 治理护栏（危险命令拦截）
+│   ├── feedback/
+│   │   └── feedback-loop.ts    # 反馈闭环（主维度）
+│   ├── memory/
+│   │   └── memory.ts           # 记忆模块（会话历史 + 上下文）
+│   └── utils/
+│       └── logger.ts           # 日志工具
+├── tests/
+│   ├── agent/loop.test.ts
+│   ├── demo/demo.test.ts       # 机制演示（3 个场景）
+│   ├── feedback/feedback-loop.test.ts
+│   ├── guardrail/guardrail.test.ts
+│   ├── llm/mock-provider.test.ts
+│   ├── memory/memory.test.ts
+│   └── tools/
+│       ├── registry.test.ts
+│       └── shell.test.ts
+├── SPEC.md                     # 设计文档
+├── PLAN.md                     # 实现计划
+├── SPEC_PROCESS.md             # 规约生成过程
+├── AGENT_LOG.md                # 实现日志
+└── README.md
+```
+
+## 安全边界
+
+- **凭据存储**：API key 通过 keytar 存入操作系统级凭据管理器（Windows Credential Manager / macOS Keychain / Linux libsecret），绝不写入源码、Git 历史或日志
+- **文件操作**：所有文件读写限制在项目根目录（projectRoot）内，无法越界访问系统文件
+- **危险命令拦截**：`rm -rf`、`DROP TABLE`、`curl | sh` 等危险 Shell 命令在护栏层被拦截，需人工确认
+- **无凭据泄露**：仓库中不存在任何真实 API key 或凭据
 
 ## 命令
 

@@ -4,108 +4,157 @@
 
 - **项目名称**：Coding Agent Harness
 - **仓库**：@rjj-maker/coding-agent-harness
-- **分支**：feat/demo-docs
 - **技术栈**：TypeScript + Node.js 18+ / Commander.js / OpenAI SDK / keytar / Vitest
 - **测试框架**：Vitest（全部使用 mock LLM，无网络依赖）
+- **主开发智能体**：OpenCode (DeepSeek V4 Pro)
+- **冷启动验证智能体**：Claude Code
 
 ---
 
-## Task 1: 项目脚手架
+## 2026-08-13
 
+### Task 1: 项目脚手架
+
+- **时间戳**：2026-08-13
+- **技能**：subagent-driven-development (implementer: general subagent)
+- **Prompt 配置**：读取 task-1-brief.md，严格按步骤执行
 - **Commit**：`04e90c2`
-- **状态**：complete
+- **Subagent**：general (DeepSeek V4 Pro)
 - **文件**：`package.json`, `tsconfig.json`, `vitest.config.ts`, `eslint.config.mjs`, `.gitignore`, `src/index.ts`
-- **说明**：创建 TypeScript + Vitest 项目骨架，配置 Commander.js、OpenAI SDK、keytar 依赖，添加构建和测试脚本。
+- **测试结果**：npm test → No test files found（正常，Task 2 后即绿）；npm run build → 通过
+- **人工干预**：无
+- **教训**：冷启动验证发现 eslint.config.mjs 内容缺失和 npm test 预期不符，已在 PLAN 中补全
 
 ---
 
-## Task 2: 核心类型定义 + 记忆模块
+### Task 2: 核心类型定义 + 记忆模块
 
+- **时间戳**：2026-08-13
+- **技能**：subagent-driven-development (implementer: general subagent) + TDD
+- **Prompt 配置**：读取 task-2-brief.md，严格 TDD 流程
 - **Commit**：`ae9171c`
-- **状态**：complete
+- **Subagent**：general (DeepSeek V4 Pro)
 - **文件**：`src/agent/types.ts`, `src/memory/memory.ts`, `tests/memory/memory.test.ts`
-- **说明**：定义 Agent 核心类型（Message, Action, AgentConfig, ToolResult, GuardResult, FeedbackResult, LLMProvider 等），实现 Memory 类（消息管理 + 上下文组装 + 截断）。TDD：先写测试后实现。
+- **测试结果**：🔴 红色 → 🟢 绿色（3/3 通过）
+- **人工干预**：无
+- **教训**：TDD 流程顺利，类型定义先于实现，测试覆盖了边界条件（截断）
 
 ---
 
-## Task 3: LLM 抽象层（MockLLMProvider + OpenAIProvider）
+### Task 3: LLM 抽象层（MockLLMProvider + OpenAIProvider）
 
+- **时间戳**：2026-08-13
+- **技能**：subagent-driven-development + TDD
+- **Prompt 配置**：读取 task-3-brief.md，严格 TDD
 - **Commit**：`ffbc386`
-- **状态**：complete
+- **Subagent**：general (DeepSeek V4 Pro)
 - **文件**：`src/llm/provider.ts`, `src/llm/mock-provider.ts`, `src/llm/openai-provider.ts`, `tests/llm/mock-provider.test.ts`
-- **说明**：MockLLMProvider 支持预设响应队列，可注入 LLM 响应进行确定性测试，记录所有消息历史以便验证。OpenAIProvider 封装 OpenAI SDK 兼容 NJUSE Hub。TDD：先写测试后实现。
+- **测试结果**：🔴 红色 → 🟢 绿色（3/3 通过），全量 6/6 通过
+- **人工干预**：无
+- **教训**：MockLLMProvider 的 queueResponse + getHistory 设计使测试可以精确验证 LLM 调用上下文
 
 ---
 
-## Task 4: 工具系统（接口 + 注册表 + 6 个工具）
+### Task 4: 工具系统（接口 + 注册表 + 6 个工具）
 
+- **时间戳**：2026-08-13
+- **技能**：subagent-driven-development + TDD
+- **Prompt 配置**：读取 task-4-brief.md，先写 registry.test.ts + shell.test.ts
 - **Commit**：`19f5469`
-- **状态**：complete
-- **文件**：`src/tools/tool.ts`, `src/tools/registry.ts`, `src/tools/read-file.ts`, `src/tools/write-file.ts`, `src/tools/shell.ts`, `src/tools/run-test.ts`, `src/tools/lint.ts`, `src/tools/grep.ts`, `tests/tools/registry.test.ts`, `tests/tools/shell.test.ts`
-- **说明**：Tool 接口 + ToolRegistry 工具注册与分发。实现 6 个工具：ReadFileTool、WriteFileTool、ShellTool、RunTestTool、LintTool、GrepTool。所有工具均限制在 projectRoot 内操作。TDD：先写测试后实现。
+- **Subagent**：general (DeepSeek V4 Pro)
+- **文件**：10 个文件（6 个工具 + 注册表 + 接口 + 2 个测试）
+- **测试结果**：🔴 红色 → 🟢 绿色（4/4 通过），全量 10/10 通过
+- **人工干预**：无
+- **教训**：工具接口设计为 Tool 接口，每个工具可独立测试。shell 测试使用真实 echo 命令验证
 
 ---
 
-## Task 5: 治理护栏
+### Task 5: 治理护栏
 
+- **时间戳**：2026-08-13
+- **技能**：subagent-driven-development + TDD
+- **Prompt 配置**：读取 task-5-brief.md，严格 TDD
 - **Commit**：`91528db`
-- **状态**：complete
+- **Subagent**：general (DeepSeek V4 Pro)
 - **文件**：`src/guardrail/guardrail.ts`, `tests/guardrail/guardrail.test.ts`
-- **说明**：Guardrail 类支持危险命令黑名单（rm -rf、DROP TABLE、curl | sh 等）和路径越界检查，危险动作返回 needApproval 以触发 HITL。所有检测逻辑均为确定性代码，不依赖 LLM。TDD：先写测试后实现。
+- **测试结果**：🔴 红色 → 🟢 绿色（6/6 通过），全量 16/16 通过
+- **人工干预**：无
+- **教训**：Guardrail 是纯确定性代码，完全不需要 LLM 参与测试。6 个测试覆盖了所有危险模式
 
 ---
 
-## Task 6: 反馈闭环（主维度）
+### Task 6: 反馈闭环（主维度）
 
+- **时间戳**：2026-08-13
+- **技能**：subagent-driven-development + TDD
+- **Prompt 配置**：读取 task-6-brief.md，严格 TDD，覆盖所有 6 种错误分类
 - **Commit**：`facca10`
-- **状态**：complete
+- **Subagent**：general (DeepSeek V4 Pro)
 - **文件**：`src/feedback/feedback-loop.ts`, `tests/feedback/feedback-loop.test.ts`
-- **说明**：FeedbackLoop 支持解析测试/lint 结果、分类失败类型（syntax_error/type_error/assertion/lint/timeout/unknown）、提取失败详情（文件名/行号/错误信息）、生成 LLM 可读的反馈摘要。分类逻辑为正则匹配，不依赖 LLM。TDD：先写测试后实现。
+- **测试结果**：🔴 红色 → 🟢 绿色（8/8 通过），全量 24/24 通过
+- **人工干预**：无
+- **教训**：正则分类逻辑需要精心设计优先级（timeout 优先于 syntax_error），否则可能误判。测试覆盖了所有 6 种分类
 
 ---
 
-## Task 7: Agent 主循环
+### Task 7: Agent 主循环
 
+- **时间戳**：2026-08-13
+- **技能**：subagent-driven-development + TDD
+- **Prompt 配置**：读取 task-7-brief.md，mock LLM 驱动下 3 个测试
 - **Commit**：`167a9bc`
-- **状态**：complete
+- **Subagent**：general (DeepSeek V4 Pro)
 - **文件**：`src/agent/loop.ts`, `tests/agent/loop.test.ts`
-- **说明**：AgentLoop 负责组织上下文 → 调用 LLM → 解析动作 → 护栏检查 → 工具分发 → 反馈回灌 → 停机判断的完整循环。支持 max_steps 限制、危险动作拦截、失败反馈回灌与重试。TDD：先写测试后实现。
+- **测试结果**：🔴 红色 → 🟢 绿色（3/3 通过），全量 27/27 通过
+- **人工干预**：无
+- **教训**：AgentLoop 的循环逻辑（上下文→LLM→动作→护栏→执行→反馈→回灌）通过 mock LLM 的预设响应队列可精确模拟每一步
 
 ---
 
-## Task 8: CLI 入口 + 凭据管理
+### Task 8: CLI 入口 + 凭据管理
 
+- **时间戳**：2026-08-13
+- **技能**：subagent-driven-development
+- **Prompt 配置**：读取 task-8-brief.md，按顺序创建文件
 - **Commit**：`ddf8432`
-- **状态**：complete
+- **Subagent**：general (DeepSeek V4 Pro)
 - **文件**：`src/index.ts`, `src/config/cli.ts`, `src/config/credential-store.ts`, `src/utils/logger.ts`
-- **说明**：提供 CLI 可执行程序入口（harness / harness run / harness config），交互式凭据管理（keytar 主方案 + .env 备选方案），API key 隐藏输入，状态查询与清除。TDD：先写测试后实现。
+- **测试结果**：全量 27/27 通过，npm run build 通过
+- **人工干预**：无
+- **教训**：keytar 是原生模块，跨平台兼容性需注意。.env 备选方案是合理的 tradeoff
 
 ---
 
-## Task 9: 机制演示
+### Task 9: 机制演示
 
+- **时间戳**：2026-08-13
+- **技能**：subagent-driven-development
+- **Prompt 配置**：读取 task-9-10-11-brief.md
 - **Commit**：`c788a09`
-- **状态**：complete
+- **Subagent**：general (DeepSeek V4 Pro)
 - **文件**：`tests/demo/demo.test.ts`
-- **说明**：3 个演示场景：① 护栏拦截危险动作 ② 反馈闭环驱动自我修正（注入失败后 agent 收到反馈并改变行为）③ 反馈闭环正确分类所有错误类型。所有测试均使用 mock LLM。
+- **测试结果**：全量 36/36 通过
+- **人工干预**：无
+- **教训**：3 个演示场景全部使用 mock LLM，不依赖网络，可作为验收测试
 
 ---
 
-## Task 10: CI 配置 + README
+### Task 10: CI 配置 + README
 
+- **时间戳**：2026-08-13
+- **技能**：subagent-driven-development
 - **Commit**：`4dc8739`
-- **状态**：complete
+- **Subagent**：general (DeepSeek V4 Pro)
 - **文件**：`.github/workflows/ci.yml`, `README.md`
-- **说明**：CI 包含 unit-test job（Node.js 18/20），每次 push 自动运行测试和构建。README 包含安装、使用、安全配置、命令说明和已知限制。
+- **人工干预**：无
 
 ---
 
-## Task 11: 补充 AGENT_LOG.md
+### Task 11: 补充 AGENT_LOG.md
 
-- **Commit**：（见最新 commit）
-- **状态**：complete
-- **文件**：`AGENT_LOG.md`
-- **说明**：补充 Task 1-11 的实际 commit hash 和实现信息。
+- **时间戳**：2026-08-13
+- **Commit**：`ab43b23`
+- **人工干预**：后续在评审阶段补充了时间戳、技能名、prompt 配置、人工干预和教训
 
 ---
 
