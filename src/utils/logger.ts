@@ -1,3 +1,5 @@
+import { renderMarkdown } from './markdown.js';
+
 const C = {
   reset: '\x1b[0m',
   bold: '\x1b[1m',
@@ -47,6 +49,9 @@ export class Logger {
   }
   convEnd(): void {
     console.log('');
+  }
+  markdown(md: string): void {
+    console.log(renderMarkdown(md));
   }
 }
 export const logger = new Logger();

@@ -62,7 +62,7 @@ program.command('run <task...>').description('执行单次编码任务')
     logger.convEnd();
     if (result.state === 'completed') {
       if (result.steps === 1 && result.message && result.message.length > 0) {
-        console.log(result.message);
+        logger.markdown(result.message);
       }
       logger.success(`完成 (${result.steps} 步)`);
     }
@@ -117,7 +117,7 @@ program.action(async () => {
     logger.convEnd();
     if (result.state === 'completed') {
       if (result.steps === 1 && result.message && result.message.length > 0) {
-        console.log(result.message);
+        logger.markdown(result.message);
       }
       logger.success(`完成`);
     } else if (result.state === 'need_approval') logger.warn(`需要审批 — ${result.message}`);

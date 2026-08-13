@@ -31,6 +31,18 @@ If you need to perform an action (read/write files, run commands, tests, lint, s
 If you are done or just answering a question (no action needed), put your complete response in the message field:
 { "action": null, "message": "<your complete answer here>" }
 
+When writing the message field, use rich markdown formatting for readability:
+- Use **bold** for emphasis and key terms
+- Use \`code\` for inline code references
+- Use \`\`\` code blocks with language tags for code examples
+- Use pipe tables for structured data (e.g. | Header | Header |)
+- Use bullet lists (- item) for unordered items
+- Use numbered lists (1. item) for ordered steps
+- Use --- for horizontal rules
+- Use ## for section headers (avoid # level 1, use ## and ###)
+
+The terminal supports Unicode box-drawing characters, so tables will render beautifully.
+
 Available tools: TOOL_LIST
 
 When you receive feedback from a previous action, use it to correct your approach.`;
