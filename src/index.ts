@@ -79,7 +79,7 @@ program.action(async () => {
   const model = cfgStore.getModel();
   const endpoint = cfgStore.getEndpoint();
   logger.info(`模型: ${model}  |  API: ${endpoint}`);
-  logger.info('输入任务描述开始交互，输入 /exit 退出');
+  logger.info('输入任务描述，输入 /exit 退出，Ctrl+C 停止当前任务');
   logger.divider();
   const projectRoot = process.cwd();
   const config: AgentConfig = { maxSteps: 30, maxRetries: 3, projectRoot, model };
@@ -93,7 +93,14 @@ program.action(async () => {
     if (trimmed === '/exit' || trimmed === '/quit') { logger.info('再见！'); rl.close(); return; }
     if (!trimmed) { rl.prompt(); return; }
     logger.divider();
-    const result = await loop.run(trimmed);
+    const abort = new AbortController();
+    const sigint = () => {
+      logger.warn('\n中断信号 — 正在取消当前任务...');
+      abort.abort();
+    };
+    process.once('SIGINT', sigint);
+    const result = await loop.run(trimmed, abort.signal);
+    process.removeListener('SIGINT', sigint);
     logger.divider();
     if (result.state === 'completed') logger.success(`完成 — ${result.message}`);
     else if (result.state === 'need_approval') logger.warn(`需要审批 — ${result.message}`);

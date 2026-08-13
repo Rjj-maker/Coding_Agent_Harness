@@ -53,13 +53,17 @@ export class AgentLoop {
     this.onStep = onStep ?? null;
   }
 
-  async run(task: string): Promise<RunResult> {
+  async run(task: string, signal?: AbortSignal): Promise<RunResult> {
     this.state = 'running';
     this.stepCount = 0;
     this.retryCount = 0;
     this.memory.addMessage({ role: 'user', content: task });
 
     while (this.state === 'running' && this.stepCount < this.config.maxSteps) {
+      if (signal?.aborted) {
+        this.state = 'failed';
+        return { state: 'failed', steps: this.stepCount, message: '任务已取消' };
+      }
       this.stepCount++;
       const startTime = Date.now();
       const context = this.memory.buildContext();
