@@ -125,6 +125,46 @@ node dist/index.js config set-model DeepSeek-V3
 **命令行参数**（优先级高于环境变量和配置文件）：
 - `node dist/index.js run "任务" --model gpt-4o`：覆盖模型
 
+## 测试
+
+### Mock LLM 确定性测试
+
+所有 harness 核心机制的单元测试均使用 `MockLLMProvider`（`src/llm/mock-provider.ts`），通过 `queueResponse()` 注入预设响应，**不依赖网络与真实 LLM**，在任意环境下可重复运行。
+
+```bash
+npm test
+```
+
+### 测试覆盖
+
+| 模块 | 测试文件 | 测试内容 |
+|------|----------|----------|
+| Agent 主循环 | `tests/agent/loop.test.ts` | 正常执行、maxSteps 超限停机、危险动作拦截 |
+| 治理护栏 | `tests/guardrail/guardrail.test.ts` | `rm -rf`、`DROP TABLE`、`curl \| sh`、越界路径拦截、安全命令放行 |
+| 反馈闭环 | `tests/feedback/feedback-loop.test.ts` | 语法错误/类型错误/断言失败/lint/超时分类、反馈文本生成、通过检测 |
+| 记忆模块 | `tests/memory/memory.test.ts` | 消息存储、上下文组装、窗口限制 |
+| 工具系统 | `tests/tools/registry.test.ts`<br>`tests/tools/shell.test.ts` | 工具注册与分发、Shell 命令执行 |
+| LLM 抽象层 | `tests/llm/mock-provider.test.ts` | MockLLM 响应队列、历史记录 |
+
+### 机制演示（`tests/demo/demo.test.ts`）
+
+一键运行 3 个场景，在 Mock LLM 下确定性地复现 harness 核心行为：
+
+| 场景 | 描述 | 复现行为 |
+|------|------|----------|
+| **Demo 1：护栏拦截** | Guardrail 拦截危险动作 | MockLLM 返回 `rm -rf /` / `DROP TABLE` 等动作，Guardrail 检测并拦截，Agent 状态转为 `need_approval` |
+| **Demo 2：反馈修正** | 反馈闭环驱动自我修正 | MockLLM 先尝试读取不存在的文件（失败）→ FeedbackLoop 注入失败反馈 → MockLLM 改为读取存在的文件（成功）→ 断言第二轮 LLM 调用上下文中包含失败反馈 |
+| **Demo 3：错误分类** | 反馈闭环错误分类 | 验证 FeedbackLoop 对 syntax_error / type_error / assertion / lint / timeout 五类错误的分类准确性 |
+
+### Harness 内核自实现
+
+全部核心机制由确定性代码实现，零外部 agent 框架依赖：
+
+- **主循环**：`src/agent/loop.ts` — 上下文组装 → LLM 调用 → JSON 解析 → 动作分发 → 反馈回灌 → 循环直至停机
+- **工具分发**：`src/tools/registry.ts` — 注册 6 个工具，按 action.type 路由到对应 tool.execute()
+- **治理护栏**：`src/guardrail/guardrail.ts` — 正则黑名单匹配 + 路径越界检查，HITL 确认流
+- **反馈闭环**：`src/feedback/feedback-loop.ts` — exitCode 解析 → 6 类错误分类 → 结构化摘要 → 回灌 LLM 上下文
+
 ## 安全配置
 
 - **主方案**：Windows Credential Manager / macOS Keychain / Linux libsecret
@@ -163,7 +203,8 @@ node dist/index.js config set-model DeepSeek-V3
 │   ├── memory/
 │   │   └── memory.ts           # 记忆模块（会话历史 + 上下文）
 │   └── utils/
-│       └── logger.ts           # 日志工具
+│       ├── logger.ts           # 日志工具
+│       └── markdown.ts         # Markdown→ANSI 终端渲染器
 ├── tests/
 │   ├── agent/loop.test.ts
 │   ├── demo/demo.test.ts       # 机制演示（3 个场景）
