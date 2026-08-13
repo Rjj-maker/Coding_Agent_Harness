@@ -19,10 +19,20 @@ export class Logger {
     console.log(`${C.gray}[${new Date().toLocaleTimeString()}]${C.reset} ${C.cyan}▶${C.reset} Step ${step} ${C.dim}|${C.reset} ${action} ${C.dim}(${duration}ms)${C.reset}`);
   }
   banner(): void {
+    const title = 'Coding Agent Harness';
+    const version = 'v0.1.0';
+    const width = 36;
+    const inner = `${title} ${version}`;
+    const pad = Math.max(0, width - 2 - inner.length);
+    const left = Math.floor(pad / 2);
+    const right = pad - left;
+    const top = '╔' + '═'.repeat(width - 2) + '╗';
+    const mid = '║' + ' '.repeat(left) + inner + ' '.repeat(right) + '║';
+    const bot = '╚' + '═'.repeat(width - 2) + '╝';
     console.log('');
-    console.log(`${C.bold}${C.cyan}  ╔══════════════════════════════════╗${C.reset}`);
-    console.log(`${C.bold}${C.cyan}  ║${C.reset}   ${C.bold}Coding Agent Harness${C.reset} v0.1.0   ${C.bold}${C.cyan}║${C.reset}`);
-    console.log(`${C.bold}${C.cyan}  ╚══════════════════════════════════╝${C.reset}`);
+    console.log(`${C.bold}${C.cyan}  ${top}${C.reset}`);
+    console.log(`${C.bold}${C.cyan}  ${mid}${C.reset}`);
+    console.log(`${C.bold}${C.cyan}  ${bot}${C.reset}`);
     console.log('');
   }
   section(title: string): void {
