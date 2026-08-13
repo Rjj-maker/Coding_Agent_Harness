@@ -2,6 +2,7 @@
 import { Command } from 'commander';
 import { createConfigCommand } from './config/cli.js';
 import { CredentialStore } from './config/credential-store.js';
+import { ConfigStore } from './config/config-store.js';
 import { AgentLoop } from './agent/loop.js';
 import { OpenAIProvider } from './llm/openai-provider.js';
 import { ToolRegistry } from './tools/registry.js';
@@ -22,17 +23,20 @@ program.name('harness').description('Coding Agent Harness').version('0.1.0');
 program.addCommand(createConfigCommand());
 
 program.command('run <task...>').description('执行单次编码任务')
-  .option('-m, --model <model>', 'LLM 模型', 'deepseek-v3')
+  .option('-m, --model <model>', 'LLM 模型')
   .option('-r, --root <path>', '项目根目录', process.cwd())
   .option('-s, --max-steps <number>', '最大步骤数', '30')
   .action(async (taskParts: string[], options) => {
     const task = taskParts.join(' ');
     const projectRoot = options.root;
     const store = new CredentialStore();
+    const cfgStore = new ConfigStore();
     const apiKey = await store.getKey();
     if (!apiKey) { logger.error('未配置 API key，请先运行: harness config set-key'); process.exit(1); }
-    const config: AgentConfig = { maxSteps: parseInt(options.maxSteps, 10), maxRetries: 3, projectRoot, model: options.model };
-    const llm = new OpenAIProvider(apiKey, process.env.LLM_BASE_URL ?? 'https://njusehub.info/v1', options.model);
+    const model = options.model ?? cfgStore.getModel();
+    const endpoint = cfgStore.getEndpoint();
+    const config: AgentConfig = { maxSteps: parseInt(options.maxSteps, 10), maxRetries: 3, projectRoot, model };
+    const llm = new OpenAIProvider(apiKey, endpoint, model);
     const registry = new ToolRegistry();
     registry.register(new ReadFileTool(projectRoot));
     registry.register(new WriteFileTool(projectRoot));
@@ -48,13 +52,18 @@ program.command('run <task...>').description('执行单次编码任务')
 
 program.action(async () => {
   logger.info('Coding Agent Harness v0.1.0');
-  logger.info('输入任务描述开始交互，输入 /exit 退出');
   const store = new CredentialStore();
+  const cfgStore = new ConfigStore();
   const apiKey = await store.getKey();
   if (!apiKey) { logger.error('未配置 API key，请先运行: harness config set-key'); process.exit(1); }
+  const model = cfgStore.getModel();
+  const endpoint = cfgStore.getEndpoint();
+  logger.info(`API 地址: ${endpoint}`);
+  logger.info(`模型: ${model}`);
+  logger.info('输入任务描述开始交互，输入 /exit 退出');
   const projectRoot = process.cwd();
-  const config: AgentConfig = { maxSteps: 30, maxRetries: 3, projectRoot, model: 'deepseek-v3' };
-  const llm = new OpenAIProvider(apiKey, process.env.LLM_BASE_URL ?? 'https://njusehub.info/v1', 'deepseek-v3');
+  const config: AgentConfig = { maxSteps: 30, maxRetries: 3, projectRoot, model };
+  const llm = new OpenAIProvider(apiKey, endpoint, model);
   const registry = new ToolRegistry();
   registry.register(new ReadFileTool(projectRoot));
   registry.register(new WriteFileTool(projectRoot));
